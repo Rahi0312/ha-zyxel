@@ -10,5 +10,5 @@
   "requirements": [
     "nr7101@git+https://github.com/Rahi0312/nr7101.git@main"
   ],
-  "version": "0.2.7"
+  "version": "0.2.8"
 }
