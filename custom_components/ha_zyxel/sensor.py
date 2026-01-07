@@ -241,7 +241,9 @@ async def async_setup_entry(
                 )
             )
         else:
-            # Skip unknown / noisy TR-181 fields
+            # Keep value in coordinator data (required for stability)
+            # but do NOT create a HA entity for it
+            _LOGGER.debug("Skipping non-whitelisted field: %s", key)
             continue
 
     if sensors:
