@@ -191,6 +191,21 @@ KNOWN_SENSORS = {
     },
 }
 
+# Prefer specific TR-181 source paths to avoid duplicate entities
+PREFERRED_PATH_PREFIXES = {
+    "X_ZYXEL_TEMPERATURE_CPU0": "device.",
+    "X_ZYXEL_TEMPERATURE_SDX": "device.",
+    "X_ZYXEL_TEMPERATURE_AMBIENT": "device.",
+
+    # prefer NSA RFCN over LTE duplicate
+    "RFCN": "cellular.NSA_",
+
+    # prefer bridge0 counters over per-if duplicates
+    "BytesSent": "traffic.bridge0",
+    "BytesReceived": "traffic.bridge0",
+}
+
+
 
 def _flatten_dict(d: dict, parent_key: str = "") -> dict:
     """Flatten a nested dictionary with dot notation for keys."""
@@ -227,8 +242,22 @@ async def async_setup_entry(
         if not _is_value_scalar(value):
             continue
 
+        # Extract final key name (e.g. RFCN, BytesSent, etc.)
+        sensor_name = key.split(".")[-1]
+
         # Check if this is a known sensor type
-        sensor_config = KNOWN_SENSORS.get(key.split(".")[-1], None)
+        sensor_config = KNOWN_SENSORS.get(sensor_name, None)
+
+        # Filter duplicates by preferring specific TR-181 paths
+        preferred_prefix = PREFERRED_PATH_PREFIXES.get(sensor_name)
+        if preferred_prefix and not key.startswith(preferred_prefix):
+            _LOGGER.debug(
+                "Skipping duplicate source for %s (path %s does not match %s)",
+                sensor_name,
+                key,
+                preferred_prefix,
+            )
+            continue
 
         if sensor_config:
             # Create a configured sensor for known types
@@ -241,8 +270,7 @@ async def async_setup_entry(
                 )
             )
         else:
-            # Keep value in coordinator data (required for stability)
-            # but do NOT create a HA entity for it
+            # Keep value in coordinator data but do NOT expose as entity
             _LOGGER.debug("Skipping non-whitelisted field: %s", key)
             continue
 
