@@ -154,6 +154,27 @@ KNOWN_SENSORS = {
         "device_class": SensorDeviceClass.DATA_SIZE,
         "state_class": SensorStateClass.TOTAL_INCREASING,
     },
+    "Total": {
+        "name": "Memory Total",
+        "unit": "kB",
+        "icon": "mdi:memory",
+        "device_class": None,
+        "state_class": SensorStateClass.MEASUREMENT,
+    },
+    "Free": {
+        "name": "Memory Free",
+        "unit": "kB",
+        "icon": "mdi:memory",
+        "device_class": None,
+        "state_class": SensorStateClass.MEASUREMENT,
+    },
+    "CPUUsage": {
+        "name": "CPU Usage",
+        "unit": "%",
+        "icon": "mdi:chip",
+        "device_class": None,
+        "state_class": SensorStateClass.MEASUREMENT,
+    },
 }
 
 
