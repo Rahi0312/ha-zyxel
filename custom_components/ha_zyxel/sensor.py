@@ -175,6 +175,20 @@ KNOWN_SENSORS = {
         "device_class": None,
         "state_class": SensorStateClass.MEASUREMENT,
     },
+    "CurrentBand": {
+        "name": "Current Band",
+        "unit": None,
+        "icon": "mdi:radio-tower",
+        "device_class": None,
+        "state_class": None,
+    },
+    "RFCN": {
+        "name": "Radio Frequency Channel Number",
+        "unit": None,
+        "icon": "mdi:access-point",
+        "device_class": None,
+        "state_class": None,
+    },
 }
 
 
@@ -227,14 +241,8 @@ async def async_setup_entry(
                 )
             )
         else:
-            # Create a generic sensor for unknown types
-            sensors.append(
-                GenericZyxelSensor(
-                    coordinator,
-                    entry,
-                    key
-                )
-            )
+            # Skip unknown / noisy TR-181 fields
+            continue
 
     if sensors:
         async_add_entities(sensors)
