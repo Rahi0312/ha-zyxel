@@ -47,7 +47,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     async def async_update_data():
         """Fetch data from the router."""
         try:
-            async with async_timeout.timeout(15):
+            async with async_timeout.timeout(30):
                 def get_all_data():
                     data = router.get_status()
 
