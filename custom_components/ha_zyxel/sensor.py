@@ -223,11 +223,9 @@ def _is_value_scalar(value: Any) -> bool:
     """Check if a value is a scalar (string, number, bool)."""
     return isinstance(value, (str, int, float, bool)) or value is None
 
-
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
-    """Set up the Zyxel sensors."""
     coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
 
     if not coordinator.data:
@@ -235,47 +233,32 @@ async def async_setup_entry(
 
     sensors = []
 
-    # Process all keys in the JSON and create sensors for them
-    # We'll use a flat structure for simplicity
     for key, value in _flatten_dict(coordinator.data).items():
-        # Skip non-scalar values
         if not _is_value_scalar(value):
             continue
 
-        # Extract final key name (e.g. RFCN, BytesSent, etc.)
         sensor_name = key.split(".")[-1]
+        sensor_config = KNOWN_SENSORS.get(sensor_name)
 
-        # Check if this is a known sensor type
-        sensor_config = KNOWN_SENSORS.get(sensor_name, None)
-
-        # Filter duplicates by preferring specific TR-181 paths
         preferred_prefix = PREFERRED_PATH_PREFIXES.get(sensor_name)
         if preferred_prefix and not key.startswith(preferred_prefix):
-            _LOGGER.debug(
-                "Skipping duplicate source for %s (path %s does not match %s)",
-                sensor_name,
-                key,
-                preferred_prefix,
-            )
             continue
 
-        if sensor_config:
-            # Create a configured sensor for known types
-            sensors.append(
-                ConfiguredZyxelSensor(
-                    coordinator,
-                    entry,
-                    key,
-                    sensor_config
-                )
-            )
-        else:
-            # Keep value in coordinator data but do NOT expose as entity
-            _LOGGER.debug("Skipping non-whitelisted field: %s", key)
+        if not sensor_config:
             continue
+
+        sensors.append(
+            ConfiguredZyxelSensor(
+                coordinator,
+                entry,
+                key,
+                sensor_config
+            )
+        )
 
     if sensors:
         async_add_entities(sensors)
+
 
 
 class AbstractZyxelSensor(CoordinatorEntity, SensorEntity):
